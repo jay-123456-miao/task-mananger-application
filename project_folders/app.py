@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, url_for, request, flash
+from flask import Flask, render_template, redirect, url_for, request, flash,jsonify
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from flask_mysqldb import MySQL
 from flask_bcrypt import Bcrypt
@@ -81,14 +81,29 @@ def login():
     return render_template('login.html')
 
 # CRUD (Task Management)
-@app.route('/dashboard')
-@login_required
-def dashboard():
+@app.route('/api/tasks')
+def get_tasks():
     cursor = mysql.connection.cursor()
     cursor.execute("SELECT * FROM tasks WHERE user_id=%s", (current_user.id,))
     tasks = cursor.fetchall()
     cursor.close()
-    return render_template('dashboard.html', tasks=tasks)
+    tasks_json = [
+    {
+        'id': row[0],
+        'title': row[2],
+        'description': row[3],
+        'due_date': row[4].strftime('%Y-%m-%d'),
+        'status': row[5]
+    }
+    for row in tasks
+    ]
+    
+    return jsonify(tasks_json)
+    
+@app.route('/dashboard')
+@login_required
+def dashboard():
+    return render_template('dashboard.html')
 
 @app.route('/add_task', methods=['POST'])
 @login_required
