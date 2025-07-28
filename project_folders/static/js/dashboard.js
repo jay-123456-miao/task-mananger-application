@@ -17,6 +17,9 @@ const descriptionField = document.getElementById("description");
 const dateField = document.getElementById("due-date-day");
 const monthField = document.getElementById("due-date-month");
 const yearField = document.getElementById("due-date-year");
+const statusSelect = document.getElementById("status-select");
+const statusDropdown = document.getElementById("status-dropdown");
+const closeButtons = document.querySelectorAll(".close-button");
 let pendingCount = 0;
 let InProgressCount = 0;
 let completedCount = 0;
@@ -46,6 +49,22 @@ addTaskCTA.addEventListener("click", () => {
   document.body.classList.add("overflow-hidden");
 });
 
+statusSelect.addEventListener("click", () => {
+  statusDropdown.classList.toggle("hide");
+});
+
+document.querySelectorAll("#status-dropdown li").forEach((item) => {
+  item.addEventListener("click", () => {
+    const label = item.querySelector("label");
+    const value = Array.from(label.querySelectorAll("span")).find(
+      (span) => span.textContent.trim() !== ""
+    ).textContent;
+    console.log("Selected:", value);
+    document.querySelector("#status-select span").textContent = value;
+    document.getElementById("status-dropdown").classList.add("hide");
+  });
+});
+
 addTaskForm.addEventListener("submit", function (e) {
   e.preventDefault();
 
@@ -56,8 +75,8 @@ addTaskForm.addEventListener("submit", function (e) {
   const year = parseInt(yearField.value);
   const errorBox = document.getElementById("errorMsg");
   const selectedStatus = document.querySelector(
-    'input[name="status-option"]:checked'
-  );
+    "#status-select span"
+  ).textContent;
 
   errorBox.textContent = "";
 
@@ -80,6 +99,13 @@ addTaskForm.addEventListener("submit", function (e) {
   ).padStart(2, "0")}`;
 
   console.log(dueDate);
+
+  submitTask({
+    title: title,
+    description: desc,
+    due_date: dueDate,
+    stat: selectedStatus,
+  });
 });
 
 // radio buttons for view option
@@ -242,4 +268,51 @@ function renderBoardView(tasks) {
       `;
     }
   });
+}
+
+// close buttons inside overlays
+closeButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    // Reset the form fields
+    document.getElementById("add-task-form").reset();
+
+    // Reset status label to default (e.g., "Pending")
+    const statusText = document.querySelector("#status-select span");
+    if (statusText) statusText.textContent = "Pending";
+
+    // Hide dropdown if it's open
+    document.getElementById("status-dropdown").classList.add("hide");
+
+    // Clear any error messages
+    document.getElementById("errorMsg").textContent = "";
+    activeOverlay.classList.add("hide");
+    activeOverlay = null;
+    // reenable scrolling
+    document.body.classList.remove("overflow-hidden");
+  });
+});
+
+//submit new task into backend
+async function submitTask(taskData) {
+  try {
+    const response = await fetch("/api/add_new_task", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(taskData),
+    });
+
+    if (!response.ok) throw new Error("Failed to add task.");
+
+    const result = await response.json();
+    alert("Task added successfully!");
+    // document.getElementById("taskForm").reset();
+
+    activeOverlay.classList.add("hide");
+    activeOverlay = null;
+    setTimeout(() => {
+      window.location.href = "/dashboard";
+    }, 1500); // 1.5 seconds delay
+  } catch (error) {
+    document.getElementById("errorMsg").textContent = error.message;
+  }
 }

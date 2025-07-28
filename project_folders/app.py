@@ -105,22 +105,22 @@ def get_tasks():
 def dashboard():
     return render_template('dashboard.html')
 
-@app.route('/add_task', methods=['POST'])
+@app.route('/api/add_new_task', methods=['POST'])
 @login_required
 def add_task():
-    title = request.form['title']
-    description = request.form['description']
-    due_date = request.form['due_date']
-    priority = request.form['priority']
-    category = request.form['category']
-    
+    data = request.get_json()
+    title = data.get('title')
+    description = data.get('description')
+    due_date = data.get('due_date')
+    status = data.get('stat')
+
+    print('HELLO', title)
     cursor = mysql.connection.cursor()
-    cursor.execute("INSERT INTO tasks (user_id, title, description, due_date, priority, category) VALUES (%s, %s, %s, %s, %s, %s)", 
-                   (current_user.id, title, description, due_date, priority, category))
+    cursor.execute("INSERT INTO tasks (user_id, title, description, due_date, status) VALUES (%s, %s, %s, %s, %s)", 
+                   (current_user.id, title, description, due_date, status))
     mysql.connection.commit()
     cursor.close()
-    flash('Task added!', 'success')
-    return redirect(url_for('dashboard'))
+    return jsonify({"message": "Task added successfully!"}), 200
 
 @app.route('/')
 def home():
