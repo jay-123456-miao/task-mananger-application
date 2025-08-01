@@ -297,19 +297,18 @@
           ></iconify-icon>
         </button>
         <h1 class="header no-margin">Name</h1>
-        <p class="value">some long task name</p>
+        <p class="value" id="task-name-view"></p>
         <h1 class="header">Description</h1>
-        <p class="value">
-          some long task namesome long task namesome long task name
-        </p>
+        <p class="value" id="task-description-view"></p>
         <div class="flex items-center">
           <h1 class="header min-width">Due date</h1>
-          <p class="value">January 7, 2020</p>
+          <p class="value" id="task-due-date"></p>
         </div>
         <div class="flex items-center">
           <h1 class="header min-width">Status</h1>
           <p class="value status-value">
-            <span class="circle blue-background"></span><span>Doing</span>
+            <span class="circle blue-background"></span
+            ><span id="view-status-text">Doing</span>
           </p>
         </div>
         <div class="control-buttons-container">
@@ -339,6 +338,7 @@
         </div>
       </div>
     </div>
+
     <!-- import IconifyIcon web component -->
     <script src="https://code.iconify.design/iconify-icon/1.0.5/iconify-icon.min.js"></script>
     <!-- js -->

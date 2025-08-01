@@ -20,6 +20,7 @@ const yearField = document.getElementById("due-date-year");
 const statusSelect = document.getElementById("status-select");
 const statusDropdown = document.getElementById("status-dropdown");
 const closeButtons = document.querySelectorAll(".close-button");
+const viewTaskOverlay = document.getElementById("view-task-overlay");
 let pendingCount = 0;
 let InProgressCount = 0;
 let completedCount = 0;
@@ -27,6 +28,8 @@ let pendingCountBoard = 0;
 let InProgressCountBoard = 0;
 let completedCountBoard = 0;
 let task_result;
+let taskItems;
+// let taskItems = document.querySelectorAll(".task-item");
 
 // the current active overlay (need to come back to this after this to study)
 let activeOverlay = null;
@@ -37,6 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
     .then((tasks) => {
       task_result = tasks;
       renderListView(tasks); // default to list views
+      taskItems = document.querySelectorAll(".task-item");
       // setupToggleButtons(tasks); // to switch between views
     });
 });
@@ -111,6 +115,7 @@ addTaskForm.addEventListener("submit", function (e) {
 // radio buttons for view option
 radioViewOptions.forEach((radioButton) => {
   radioButton.addEventListener("change", (event) => {
+    console.log("Clicked");
     const eventTarget = event.target;
     const viewOption = eventTarget.value;
 
@@ -196,6 +201,7 @@ function renderListView(tasks) {
         </li>
       `;
     }
+    taskItems = document.querySelectorAll(".task-item");
   });
 }
 
@@ -316,3 +322,44 @@ async function submitTask(taskData) {
     document.getElementById("errorMsg").textContent = error.message;
   }
 }
+
+document.getElementById("list-view").addEventListener("click", (event) => {
+  const task = event.target.closest(".task-item");
+  const nextDiv = event.target.nextElementSibling;
+  const className = nextDiv?.className;
+  console.log(className);
+  if (task) {
+    const name = task.querySelector(".task-name").textContent;
+    const description = task.querySelector(".task-description").textContent;
+    const dueDateText = task.querySelector(".task-due-date").textContent;
+    const dueDate = dueDateText.slice(7).trim();
+    const listContainer = task.closest(
+      ".list-container.pink, .list-container.blue, .list-container.green"
+    );
+    const statusElement = document.querySelector(".status-value");
+    const circleSpan = statusElement.querySelector(".circle");
+    const statusText = document.getElementById("view-status-text");
+    let listType = "Unknown";
+    if (listContainer) {
+      if (listContainer.classList.contains("pink")) {
+        listType = "To Do";
+        circleSpan.className = "circle pink-background";
+      } else if (listContainer.classList.contains("green")) {
+        listType = "In Progress";
+        circleSpan.className = "circle green-background";
+      } else if (listContainer.classList.contains("blue")) {
+        listType = "Completed";
+        circleSpan.className = "circle blue-background";
+      }
+      statusText.textContent = listType;
+    }
+    console.log(listType);
+    console.log(dueDate);
+    viewTaskOverlay.classList.remove("hide");
+    activeOverlay = viewTaskOverlay;
+    document.getElementById("task-name-view").textContent = name;
+    document.getElementById("task-description-view").textContent = description;
+    document.getElementById("task-due-date").textContent = dueDate;
+    circleSpan.style = document.body.classList.add("overflow-hidden");
+  }
+});
